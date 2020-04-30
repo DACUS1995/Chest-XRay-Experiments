@@ -20,6 +20,7 @@ from run_builder import RunBuilder
 from data import DataHandler
 from config import Config
 import utils
+from models.test_model import TestModel
 
 
 def train(cfg) -> None:
@@ -52,10 +53,10 @@ def train(cfg) -> None:
 		comment = f"Run setup -- {run}"
 		print(comment)
 
-		model = ...
+		model = TestModel()
 		model.to(device)
-		optimizer = ...
-		loss_criterion = ...
+		optimizer = optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
+		loss_criterion = torch.nn.BCELoss(size_average = True)
 
 		log_dir = "logs/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 		writer = SummaryWriter(log_dir)

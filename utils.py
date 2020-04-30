@@ -19,20 +19,21 @@ def visualize_model(model, dataloader, num_images=5):
 
 	with torch.no_grad():
 		inputs, labels = next(iter(dataloader))
-			inputs = inputs.to(device)
-			labels = labels.to(device)
+		inputs = inputs.to(device)
+		labels = labels.to(device)
 
-			outputs = model(inputs)
-			_, preds = torch.max(outputs, 1)
+		outputs = model(inputs)
+		_, preds = torch.max(outputs, 1)
 
-			for j in range(inputs.size()[0]):
-				images_so_far += 1
-				ax = plt.subplot(num_images//2, 2, images_so_far)
-				ax.axis('off')
-				ax.set_title('predicted: {}'.format(class_names[preds[j]]))
-				imshow(inputs.cpu().data[j])
+	for j in range(inputs.size()[0]):
+		images_so_far += 1
+		ax = plt.subplot(num_images//2, 2, images_so_far)
+		ax.axis('off')
+		ax.set_title('predicted: {}'.format(class_names[preds[j]]))
+		imshow(inputs.cpu().data[j])
 
-				if images_so_far == num_images:
-					model.train(mode=was_training)
-					return
-		model.train(mode=was_training)
+		if images_so_far == num_images:
+			model.train(mode=was_training)
+			return
+			
+	model.train(mode=was_training)
