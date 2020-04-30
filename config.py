@@ -10,6 +10,6 @@ class Config:
 	device = "cuda"
 	num_epochs = 50
 	lr = 0.001
-	batch_size = 64
+	batch_size = 6
 	test_batch_size = 5
 	workers = 2

@@ -79,7 +79,7 @@ def train(cfg) -> None:
 				x_batch, label_batch = x_batch.to(device), label_batch.to(device)
 
 				optimizer.zero_grad()
-				outputs = model(...)
+				outputs = model(x_batch)
 				_, preds = torch.max(outputs, 1)
 
 				loss = loss_criterion(outputs, label_batch)
@@ -89,7 +89,7 @@ def train(cfg) -> None:
 				
 				# statistics
 				running_loss += loss.item() * x_batch.size(0)
-				running_corrects += torch.sum(preds == label_batch.detach())
+				running_corrects += torch.sum(outputs == label_batch.detach())
 				training_loss.append(loss.item())
 
 				# # tensorboard logging
@@ -121,12 +121,12 @@ def train(cfg) -> None:
 					x_batch, label_batch = data
 					x_batch, label_batch = x_batch.to(device), label_batch.to(device)
 
-					outputs = model(...)
+					outputs = model(x_batch)
 					_, preds = torch.max(outputs, 1)
-					loss = loss_criterion(...)
+					loss = loss_criterion(outputs, label_batch)
 
 					running_loss += loss.item() * x_batch.size(0)
-					running_corrects += torch.sum(preds == label_batch.detach())
+					running_corrects += torch.sum(outputs == label_batch.detach())
 					validation_loss.append(loss.item())
 			
 			epoch_loss = running_loss / validation_dataset_size

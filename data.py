@@ -61,7 +61,7 @@ class CustomDataset(Dataset):
 				# transforms.RandomRotation(20),
 				# transforms.RandomHorizontalFlip(),
 				transforms.ToTensor(),
-				transforms.Normalize(mean=[0.5330], std=[0.0349])
+				transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 			]),
 			'test_transforms' : transforms.Compose([
 				transforms.Resize((224,224)),
@@ -80,7 +80,7 @@ class CustomDataset(Dataset):
 	def __getitem__(self, idx):
 		record = self.df.loc[idx]
 		img_path = os.path.join(self.root_path, record["Path"])
-		image = Image.open(img_path)
+		image = Image.open(img_path).convert('RGB')
 
 		if self.transformers is not None:
 			image = self.transformers[self.run_type + "_transforms"](image)
