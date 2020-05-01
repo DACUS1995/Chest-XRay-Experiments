@@ -134,8 +134,8 @@ def train(cfg) -> None:
 
 					running_loss += loss.item() * x_batch.size(0)
 					auc_score = metrics.roc_auc_score(
-						label_batch.detach().cpu().view((-1)).numpy()[0], 
-						outputs.detach().cpu().view((-1)).numpy()[0]
+						label_batch.detach().cpu().view((-1)).numpy(), 
+						outputs.detach().cpu().view((-1)).numpy()
 					)
 					validation_loss.append(loss.item())
 			
