@@ -15,12 +15,17 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.tensorboard import SummaryWriter
+from sklearn import metrics
 
 from run_builder import RunBuilder
 from data import DataHandler
+from data import criterion_weight
 from config import Config
 import utils
 from models.test_model import TestModel
+
+
+competition_columns = torch.ByteTensor([0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0])
 
 
 def train(cfg) -> None:
@@ -32,8 +37,8 @@ def train(cfg) -> None:
 	else:
 		runs = RunBuilder.get_runs(
 			OrderedDict({
-				lr: [cfg.lr],
-				num_epochs: [cfg.num_epochs]
+				"lr": [cfg.lr],
+				"num_epochs": [cfg.num_epochs]
 			})
 		)
 	assert runs != None
@@ -56,7 +61,7 @@ def train(cfg) -> None:
 		model = TestModel()
 		model.to(device)
 		optimizer = optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
-		loss_criterion = torch.nn.BCELoss(size_average = True)
+		loss_criterion = torch.nn.BCELoss(size_average = True, weight=criterion_weight)
 
 		log_dir = "logs/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 		writer = SummaryWriter(log_dir)
@@ -71,7 +76,7 @@ def train(cfg) -> None:
 			model.train()
 			training_loss = []
 			running_loss = 0.0
-			running_corrects = 0
+			auc_score = 0
 			
 			for i, data in enumerate(tqdm(train_loader, desc=f"Epoch [{epoch + 1}] progress")):
 
@@ -89,7 +94,10 @@ def train(cfg) -> None:
 				
 				# statistics
 				running_loss += loss.item() * x_batch.size(0)
-				running_corrects += torch.sum(outputs == label_batch.detach())
+				auc_score = metrics.roc_auc_score(
+					label_batch.detach().cpu().view((-1)).numpy(), 
+					outputs.detach().cpu().view((-1)).numpy()
+				)
 				training_loss.append(loss.item())
 
 				# # tensorboard logging
@@ -99,13 +107,13 @@ def train(cfg) -> None:
 
 
 			epoch_loss = running_loss / training_dataset_size
-			epoch_acc = running_corrects.double() / training_dataset_size
+			epoch_acc = auc_score / training_dataset_size
 
 			# tensorboard logging
 			writer.add_scalar("Loss/train", epoch_loss, epoch)
 			writer.add_scalar("Accuracy/train", epoch_acc, epoch)
 
-			print('Training step => Loss: {:.4f} Acc: {:.4f}'.format(
+			print('Training step => Loss: {:.4f} AUC: {:.4f}'.format(
 				epoch_loss, epoch_acc
 			))
 
@@ -114,7 +122,6 @@ def train(cfg) -> None:
 			model.eval()
 			validation_loss = []
 			running_loss = 0.0
-			running_corrects = 0
 
 			for i, data in enumerate(validation_loader):
 				with torch.no_grad():
@@ -126,17 +133,20 @@ def train(cfg) -> None:
 					loss = loss_criterion(outputs, label_batch)
 
 					running_loss += loss.item() * x_batch.size(0)
-					running_corrects += torch.sum(outputs == label_batch.detach())
+					auc_score = metrics.roc_auc_score(
+						label_batch.detach().cpu().view((-1)).numpy()[0], 
+						outputs.detach().cpu().view((-1)).numpy()[0]
+					)
 					validation_loss.append(loss.item())
 			
 			epoch_loss = running_loss / validation_dataset_size
-			epoch_acc = running_corrects.double() / validation_dataset_size
+			epoch_acc = auc_score / validation_dataset_size
 
 			# tensorboard logging
 			writer.add_scalar("Loss/validation", epoch_loss, epoch)
 			writer.add_scalar("Accuracy/validation", epoch_acc, epoch)
 
-			print('Evaluation step => Loss: {:.4f} Acc: {:.4f}'.format(
+			print('Evaluation step => Loss: {:.4f} AUC: {:.4f}'.format(
 				epoch_loss, epoch_acc
 			))
 

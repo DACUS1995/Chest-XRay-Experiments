@@ -12,6 +12,7 @@ from torchvision import datasets, models, transforms
 from torch.utils.data.dataset import Dataset
 from torch.utils.data import DataLoader
 
+criterion_weight = None
 
 class DataHandler:
 	def __init__(self, run_config):
@@ -52,7 +53,9 @@ class CustomDataset(Dataset):
 		df[self.label_col] = df[self.label_col].replace(-1,1) # U-Ones
 		df = df.reset_index()
 
-		self.df = df
+		criterion_weight = torch.tensor([df[col].sum()/df.shape[0] for col in self.label_col])
+
+		self.df = df[:5000]
 
 		self.transformers = {
 			'train_transforms' : transforms.Compose([
