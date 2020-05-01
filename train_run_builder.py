@@ -175,7 +175,7 @@ def train(cfg) -> None:
 
 def main(args: Namespace) -> None:
 	trained_model = train(Config)
-	torch.save(model.state_dict(), f"model_{datetime.datetime.now()}.pt")
+	torch.save(trained_model.state_dict(), f"model_{datetime.datetime.now()}.pt")
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
