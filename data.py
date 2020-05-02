@@ -55,7 +55,7 @@ class CustomDataset(Dataset):
 
 		criterion_weight = torch.tensor([df[col].sum()/df.shape[0] for col in self.label_col])
 
-		self.df = df[:5000]
+		self.df = df[:8000]
 
 		self.transformers = {
 			'train_transforms' : transforms.Compose([
