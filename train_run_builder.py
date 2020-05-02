@@ -25,8 +25,7 @@ import utils
 from models.test_model import TestModel
 
 
-competition_columns = torch.ByteTensor([0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0])
-
+competition_columns = [2, 5, 6, 8, 10]
 
 def train(cfg) -> None:
 	device = torch.device(cfg.device)
@@ -95,8 +94,8 @@ def train(cfg) -> None:
 				# statistics
 				running_loss += loss.item() * x_batch.size(0)
 				auc_score = metrics.roc_auc_score(
-					label_batch.detach().cpu().view((-1)).numpy(), 
-					outputs.detach().cpu().view((-1)).numpy()
+					label_batch[:,competition_columns].detach().cpu().view((-1)).numpy(), 
+					outputs[:,competition_columns].detach().cpu().view((-1)).numpy()
 				)
 				training_loss.append(loss.item())
 
@@ -134,8 +133,8 @@ def train(cfg) -> None:
 
 					running_loss += loss.item() * x_batch.size(0)
 					auc_score = metrics.roc_auc_score(
-						label_batch.detach().cpu().view((-1)).numpy(), 
-						outputs.detach().cpu().view((-1)).numpy()
+						label_batch[:, competition_columns].detach().cpu().view((-1)).numpy(), 
+						outputs[:,competition_columns].detach().cpu().view((-1)).numpy()
 					)
 					validation_loss.append(loss.item())
 			
@@ -175,7 +174,7 @@ def train(cfg) -> None:
 
 def main(args: Namespace) -> None:
 	trained_model = train(Config)
-	torch.save(trained_model.state_dict(), f"model_{datetime.datetime.now()}.pt")
+	torch.save(trained_model.state_dict(), f"{trained_model.name}.pt")
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()

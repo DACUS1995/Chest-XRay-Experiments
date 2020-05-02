@@ -6,8 +6,11 @@ num_classes = 14
 class TestModel(nn.Module):
 	def __init__(self, out_size = num_classes):
 		super().__init__()
+		self.name = "test_model"
 		self.densenet121 = torchvision.models.densenet121(pretrained=True)
+
 		num_ftrs = self.densenet121.classifier.in_features
+		
 		self.densenet121.classifier = nn.Sequential(
 			nn.Linear(num_ftrs, out_size),
 			nn.Sigmoid()
