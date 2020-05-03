@@ -27,6 +27,8 @@ from models.test_model import TestModel
 
 competition_columns = [2, 5, 6, 8, 10]
 
+# TODO Add checkpoint support
+
 def train(cfg) -> None:
 	device = torch.device(cfg.device)
 

@@ -29,7 +29,7 @@ class DataHandler:
 	def get_data_loaders(self) -> Tuple[DataLoader]:
 		return (
 			DataLoader(self._training_dataset, batch_size=self._run_config.batch_size, shuffle=True, num_workers=self._run_config.workers, pin_memory=True), 
-			DataLoader(self._validation_dataset, batch_size=self._run_config.batch_size, shuffle=True, num_workers=self._run_config.workers, pin_memory=True)
+			DataLoader(self._validation_dataset, batch_size=self._run_config.batch_size, shuffle=False, num_workers=self._run_config.workers, pin_memory=True)
 		)
 
 	def get_datasets(self) -> Tuple[Dataset]:
@@ -66,17 +66,11 @@ class CustomDataset(Dataset):
 				transforms.ToTensor(),
 				transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 			]),
-			'test_transforms' : transforms.Compose([
-				transforms.Resize((224,224)),
-				# transforms.CenterCrop(224),
-				transforms.ToTensor(),
-				transforms.Normalize(mean=[0.5330], std=[0.0349])
-			]),
 			'valid_transforms' : transforms.Compose([
 				transforms.Resize((224,224)),
 				# transforms.CenterCrop(224),
 				transforms.ToTensor(),
-				transforms.Normalize(mean=[0.5330], std=[0.0349])
+				transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 			])
 		}
 
