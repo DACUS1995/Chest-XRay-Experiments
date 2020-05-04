@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 class Config:
+	resume = False
 	use_run_setup = False
 	run_setup = OrderedDict({
 		"lr": [0.01, 0.001],

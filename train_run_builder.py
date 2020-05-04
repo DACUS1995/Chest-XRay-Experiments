@@ -24,10 +24,13 @@ from config import Config
 import utils
 from models.test_model import TestModel
 
+torch.manual_seed(0)
+np.random.seed(0)
+# torch.backends.cudnn.deterministic = True
+# torch.backends.cudnn.benchmark = False
+
 
 competition_columns = [2, 5, 6, 8, 10]
-
-# TODO Add checkpoint support
 
 def train(cfg) -> None:
 	device = torch.device(cfg.device)
@@ -61,7 +64,16 @@ def train(cfg) -> None:
 
 		model = TestModel()
 		model.to(device)
-		optimizer = optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
+		optimizer = optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-4)
+		
+		# Check if resume
+		if use_run_setup == False and resume = True:
+			checkpoint = torch.load("./checkpoints/ckp.pt")
+			model.load_state_dict(checkpoint["model_state_dict"])
+			optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+			run.num_epochs -= checkpoint["epoch"]
+
+
 		loss_criterion = torch.nn.BCELoss(size_average = True, weight=criterion_weight)
 
 		log_dir = "logs/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -156,6 +168,13 @@ def train(cfg) -> None:
 				best_acc = epoch_acc
 				best_config = f"{run}"
 				best_model_wts = copy.deepcopy(model.state_dict())
+
+			#Checkpoint
+			torch.save({
+				"epoch": epoch,
+				"model_state_dict": model.state_dict(),
+				"optimizer_state_dict": optimizer.state_dict()
+			}, "./checkpoints/ckp.pt")
 
 
 		time_elapsed = time.time() - since
